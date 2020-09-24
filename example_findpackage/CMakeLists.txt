@@ -4,11 +4,10 @@ project(ICP)
 
 set(Pangolin_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../third-party/Pangolin/build/src" CACHE PATH "Pangolin build directory")
 set(Sophus_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../third-party/Sophus" CACHE PATH "Sophus Include directory")
-message("###############")
-message("${CMAKE_CURRENT_SOURCE_DIR}")
-message("###############")
+
 find_package(Pangolin REQUIRED)
 find_package(CUDA REQUIRED)
+find_package(icpcuda REQUIRED)
 
 find_library(CUDART_LIBRARY cudart ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
 
@@ -18,8 +17,6 @@ include_directories(${EIGEN_INCLUDE_DIRS})
 include_directories(${Sophus_INCLUDE_DIR})
 
 file(GLOB srcs *.cpp *.cu *.h *.cuh)
-# file(GLOB cuda Cuda/*.cu Cuda/*.cpp Cuda/*.cuh Cuda/*.h)
-# file(GLOB containers Cuda/containers/*.cpp Cuda/containers/*.h Cuda/containers/*.cu Cuda/containers/*.cuh)
 
 set(CUDA_ARCH_BIN "" CACHE STRING "Specify 'real' GPU arch to build binaries for, BIN(PTX) format is supported. Example: 1.3 2.1(1.3) or 13 21(13)")
 set(CUDA_ARCH_PTX "" CACHE STRING "Specify 'virtual' PTX arch to build PTX intermediate code for. Example: 1.0 1.2 or 10 12")              
@@ -41,9 +38,6 @@ set(CMAKE_CXX_FLAGS "-O3 -msse2 -msse3 -Wall -std=c++11")
 
 add_executable(ICP 
                ${srcs}
-            #    ${cuda} 
-            #    ${cuda_objs} 
-            #    ${containers}
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/../)
@@ -56,14 +50,14 @@ target_include_directories(
 
 
 add_library(mylib SHARED IMPORTED) # or STATIC instead of SHARED
-set_target_properties(mylib PROPERTIES
-  IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/../build/libmylib.so"
-  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/../ICPOdometry.h"
+set_target_properties(icpcuda PROPERTIES
+  IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/../build/libicpcuda.so"
+  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/../"
 )
 
 target_link_libraries(ICP
                       ${Pangolin_LIBRARIES}
                       ${CUDART_LIBRARY}
                       ${CUDA_LIBRARIES}
-                      mylib
+                      icpcuda
 )

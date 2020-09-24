@@ -1,17 +1,14 @@
-# cmake -DCMAKE_C_COMPILER=$(which gcc-8) -DCMAKE_CXX_COMPILER=$(which g++-8) \
-# -DWITH_CUDA=ON ..
-#
-
-
+# cmake -DCMAKE_C_COMPILER=$(which gcc-8) -DCMAKE_CXX_COMPILER=$(which g++-8) \-DWITH_CUDA=ON ..
+ 
 cmake_minimum_required(VERSION 3.9)
 
-set ( PROJECT_NAME "mylib" )
-set ( PROJECT_VERSION 1.0.0 )
+set ( PROJECT_NAME "icpcuda" )
+set(VERSION_MAJOR 1)
+set(VERSION_MINOR 0)
+set(VERSION_PATCH 0)
+set ( PROJECT_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}" )
 
-project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} DESCRIPTION "${PROJECT_NAME} description")
-
-# include(GNUInstallDirs)
-
+project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} DESCRIPTION "Super fast implementation of ICP in CUDA for compute capable devices 3.5 or higher.")
 
 set(Pangolin_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/Pangolin/build/src" CACHE PATH "Pangolin build directory")
 set(Sophus_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/Sophus" CACHE PATH "Sophus Include directory")
@@ -46,15 +43,14 @@ CUDA_COMPILE(cuda_objs ${cuda})
 
 set(CMAKE_CXX_FLAGS "-O3 -msse2 -msse3 -Wall -std=c++11")
 
-
-add_library(mylib SHARED
+add_library(${PROJECT_NAME} SHARED
                ${srcs}
                ${cuda} 
                ${cuda_objs} 
                ${containers}
 )
 
-set_target_properties(mylib PROPERTIES
+set_target_properties(${PROJECT_NAME} PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION 1
     PUBLIC_HEADER ICPOdometry.h)
@@ -70,15 +66,16 @@ install(TARGETS ${PROJECT_NAME}
 install(FILES ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)  
 
-# add_executable(ICP 
-#                ${srcs}
-#                ${cuda} 
-#                ${cuda_objs} 
-#                ${containers}
-# )
-
-# target_link_libraries(ICP
-#                       ${Pangolin_LIBRARIES}
-#                       ${CUDA_LIBRARIES}
-# )
-
+# Package Generator  #######################################################
+include (InstallRequiredSystemLibraries)
+set(CPACK_PACKAGE_DESCRIPTION "icp cuda implementation")
+set(CPACK_PACKAGE_VERSION_MAJOR "${VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${VERSION_PATCH}")
+set(CPACK_PACKAGE_VENDOR "ZMP")
+set(CPACK_PACKAGE_CONTACT "tsean.liu@zmp.co.jp")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Jacky Liu")
+set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+set(CPACK_GENERATOR "DEB")
+SET(CPACK_SET_DESTDIR "on")
+include (CPack)

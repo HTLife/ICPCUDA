@@ -10,16 +10,25 @@ sudo apt-get install build-essential cmake libglew-dev libpng-dev
 git clone https://github.com/mp3guy/ICPCUDA.git
 cd ICPCUDA
 git submodule update --init
+# Build Pangolin
 cd third-party/Pangolin/
 mkdir build
 cd build/
 cmake ../ -DEIGEN_INCLUDE_DIR=<absolute_path_to_Eigen_submodule>
-make -j12
+make -j6
+
+# Build shared library
 cd ../../../
 mkdir build
 cd build/
-cmake ..
-make -j12
+cmake -DCMAKE_C_COMPILER=$(which gcc-8) -DCMAKE_CXX_COMPILER=$(which g++-8) \-DWITH_CUDA=ON ..
+make -j6
+cpack ..
+
+## Install debian package
+sudo dpkg -i icpcuda-1.0.0.deb
+sudo apt-get update
+sudo apt-get install icpcuda
 ```
 
 The particular version of ICP implemented is the one introduced by [KinectFusion](http://homes.cs.washington.edu/~newcombe/papers/newcombe_etal_ismar2011.pdf). This means a three level coarse-to-fine registration pyramid, from 160x120 to 320x240 and finally 640x480 image sizes, with 4, 5 and 10 iterations per level respectively. 
