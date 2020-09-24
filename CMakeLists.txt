@@ -1,6 +1,17 @@
-cmake_minimum_required(VERSION 2.6.0)
+# cmake -DCMAKE_C_COMPILER=$(which gcc-8) -DCMAKE_CXX_COMPILER=$(which g++-8) \
+# -DWITH_CUDA=ON ..
+#
 
-project(ICP)
+
+cmake_minimum_required(VERSION 3.9)
+
+set ( PROJECT_NAME "mylib" )
+set ( PROJECT_VERSION 1.0.0 )
+
+project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} DESCRIPTION "${PROJECT_NAME} description")
+
+# include(GNUInstallDirs)
+
 
 set(Pangolin_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/Pangolin/build/src" CACHE PATH "Pangolin build directory")
 set(Sophus_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party/Sophus" CACHE PATH "Sophus Include directory")
@@ -35,15 +46,39 @@ CUDA_COMPILE(cuda_objs ${cuda})
 
 set(CMAKE_CXX_FLAGS "-O3 -msse2 -msse3 -Wall -std=c++11")
 
-add_executable(ICP 
+
+add_library(mylib SHARED
                ${srcs}
                ${cuda} 
                ${cuda_objs} 
                ${containers}
 )
 
-target_link_libraries(ICP
-                      ${Pangolin_LIBRARIES}
-                      ${CUDA_LIBRARIES}
-)
+set_target_properties(mylib PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    SOVERSION 1
+    PUBLIC_HEADER ICPOdometry.h)
+
+configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
+
+target_include_directories(${PROJECT_NAME} PRIVATE .)
+
+install(TARGETS ${PROJECT_NAME}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+install(FILES ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc
+    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)  
+
+# add_executable(ICP 
+#                ${srcs}
+#                ${cuda} 
+#                ${cuda_objs} 
+#                ${containers}
+# )
+
+# target_link_libraries(ICP
+#                       ${Pangolin_LIBRARIES}
+#                       ${CUDA_LIBRARIES}
+# )
 
