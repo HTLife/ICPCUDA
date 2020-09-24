@@ -21,7 +21,7 @@ make -j6
 cd ../../../
 mkdir build
 cd build/
-cmake -DCMAKE_C_COMPILER=$(which gcc-8) -DCMAKE_CXX_COMPILER=$(which g++-8) \-DWITH_CUDA=ON ..
+cmake -DCMAKE_C_COMPILER=$(which gcc-8) -DCMAKE_CXX_COMPILER=$(which g++-8) ..
 make -j6
 cpack ..
 
@@ -29,7 +29,19 @@ cpack ..
 sudo dpkg -i icpcuda-1.0.0.deb
 sudo apt-get update
 sudo apt-get install icpcuda
+
+## Test to include in other project
+cd pclicp
+mkdir build
+cd build
+cmake ..
+make -j6
+./iterative_closest_point 
 ```
+
+
+
+# Original README page
 
 The particular version of ICP implemented is the one introduced by [KinectFusion](http://homes.cs.washington.edu/~newcombe/papers/newcombe_etal_ismar2011.pdf). This means a three level coarse-to-fine registration pyramid, from 160x120 to 320x240 and finally 640x480 image sizes, with 4, 5 and 10 iterations per level respectively. 
 
