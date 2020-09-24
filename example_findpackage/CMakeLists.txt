@@ -7,7 +7,7 @@ set(Sophus_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../third-party/Sophus" CACHE
 
 find_package(Pangolin REQUIRED)
 find_package(CUDA REQUIRED)
-find_package(icpcuda REQUIRED)
+find_package(ICPCUDA REQUIRED)
 
 find_library(CUDART_LIBRARY cudart ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
 
@@ -48,12 +48,7 @@ target_include_directories(
     ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
 )
 
-
-add_library(mylib SHARED IMPORTED) # or STATIC instead of SHARED
-set_target_properties(icpcuda PROPERTIES
-  IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/../build/libicpcuda.so"
-  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/../"
-)
+add_library(mylib SHARED IMPORTED)
 
 target_link_libraries(ICP
                       ${Pangolin_LIBRARIES}

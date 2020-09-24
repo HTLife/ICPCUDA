@@ -1,4 +1,4 @@
-# cmake -DCMAKE_C_COMPILER=$(which gcc-8) -DCMAKE_CXX_COMPILER=$(which g++-8) \-DWITH_CUDA=ON ..
+# cmake -DCMAKE_C_COMPILER=$(which gcc-8) -DCMAKE_CXX_COMPILER=$(which g++-8) -DWITH_CUDA=ON ..
  
 cmake_minimum_required(VERSION 3.9)
 
@@ -22,9 +22,10 @@ include_directories(${EIGEN_INCLUDE_DIRS})
 include_directories(${Sophus_INCLUDE_DIR})
 
 file(GLOB srcs *.cpp *.cu *.h *.cuh)
-file(GLOB cuda Cuda/*.cu Cuda/*.cpp Cuda/*.cuh Cuda/*.h)
-file(GLOB containers Cuda/containers/*.cpp Cuda/containers/*.h Cuda/containers/*.cu Cuda/containers/*.cuh)
+file(GLOB cuda icpCuda/*.cu icpCuda/*.cpp icpCuda/*.cuh icpCuda/*.h)
+file(GLOB containers icpCuda/containers/*.cpp icpCuda/containers/*.h icpCuda/containers/*.cu icpCuda/containers/*.cuh)
 
+## CUDA set up
 set(CUDA_ARCH_BIN "" CACHE STRING "Specify 'real' GPU arch to build binaries for, BIN(PTX) format is supported. Example: 1.3 2.1(1.3) or 13 21(13)")
 set(CUDA_ARCH_PTX "" CACHE STRING "Specify 'virtual' PTX arch to build PTX intermediate code for. Example: 1.0 1.2 or 10 12")              
 
@@ -49,7 +50,10 @@ add_library(${PROJECT_NAME} SHARED
                ${cuda_objs} 
                ${containers}
 )
-
+target_link_libraries (${PROJECT_NAME}
+    ${CUDART_LIBRARY}
+    ${CUDA_LIBRARIES}
+)
 set_target_properties(${PROJECT_NAME} PROPERTIES
     VERSION ${PROJECT_VERSION}
     SOVERSION 1
@@ -59,14 +63,32 @@ configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
 
 target_include_directories(${PROJECT_NAME} PRIVATE .)
 
+install(DIRECTORY 
+    ${PROJECT_SOURCE_DIR}/icpCuda 
+    DESTINATION /usr/local/include )
+
+install(DIRECTORY 
+    ${PROJECT_SOURCE_DIR}/third-party/Sophus/sophus
+    DESTINATION /usr/local/include )    
+
+# generate ${PROJECT_NAME}-config.cmake
 install(TARGETS ${PROJECT_NAME}
+    EXPORT ${PROJECT_NAME}-export   
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+install(EXPORT ${PROJECT_NAME}-export         
+    FILE ${PROJECT_NAME}-config.cmake         
+    DESTINATION share/cmake/${PROJECT_NAME}/  
+    EXPORT_LINK_INTERFACE_LIBRARIES)          
 
 install(FILES ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)  
 
+
+
 # Package Generator  #######################################################
+include(CMakePackageConfigHelpers)
 include (InstallRequiredSystemLibraries)
 set(CPACK_PACKAGE_DESCRIPTION "icp cuda implementation")
 set(CPACK_PACKAGE_VERSION_MAJOR "${VERSION_MAJOR}")
