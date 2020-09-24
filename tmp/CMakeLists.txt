@@ -10,6 +10,8 @@ message("###############")
 find_package(Pangolin REQUIRED)
 find_package(CUDA REQUIRED)
 
+find_library(CUDART_LIBRARY cudart ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
+
 include_directories(${Pangolin_INCLUDE_DIRS})
 include_directories(${CUDA_INCLUDE_DIRS})
 include_directories(${EIGEN_INCLUDE_DIRS})
@@ -46,6 +48,13 @@ add_executable(ICP
 
 include_directories(${CMAKE_SOURCE_DIR}/../)
 
+target_include_directories(
+    ICP 
+    PRIVATE 
+    ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+)
+
+
 add_library(mylib SHARED IMPORTED) # or STATIC instead of SHARED
 set_target_properties(mylib PROPERTIES
   IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/../build/libmylib.so"
@@ -54,6 +63,7 @@ set_target_properties(mylib PROPERTIES
 
 target_link_libraries(ICP
                       ${Pangolin_LIBRARIES}
+                      ${CUDART_LIBRARY}
                       ${CUDA_LIBRARIES}
                       mylib
 )
